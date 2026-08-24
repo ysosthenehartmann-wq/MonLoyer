@@ -80,5 +80,6 @@ export function genererRecuPDF({ proprietaire, immeuble, logement, locataire, pa
 export function telechargerRecu(payload) {
   const doc = genererRecuPDF(payload);
   const nomFichier = `recu-${(payload.locataire?.nom || "locataire").replace(/\s+/g, "-").toLowerCase()}-${payload.paiement.periode}.pdf`;
+  if (typeof window !=="undefined" && window.umami) { window.umami.track("recu_genere"); }   
   doc.save(nomFichier);
 }
