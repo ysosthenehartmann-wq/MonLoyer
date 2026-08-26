@@ -6,7 +6,9 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <span className="brand-mark">🏠</span>
+        <span className="brand-mark">
+          <img src="/logo.png" alt="MonLoyer" style={{ width: "28px", height: "28px" }} />
+        </span>
         MonLoyer
       </div>
       <div className="tagline">Gérez vos loyers en toute simplicité</div>
