@@ -1,4 +1,4 @@
-import { useState } from "react";
+  import { useState } from "react";
 import { useData } from "../context/DataContext";
 import { formatMoney } from "../lib/dates";
 import Modal from "../components/Modal";
@@ -111,18 +111,27 @@ export default function Immeubles() {
 function ImmeubleForm({ initial, onClose, onSave }) {
   const [nom, setNom] = useState(initial?.nom || "");
   const [adresse, setAdresse] = useState(initial?.adresse || "");
-
+  const [type, setType] = useState(initial?.type || "immeuble");
   function submit(e) {
     e.preventDefault();
     if (!nom.trim()) return;
-    onSave({ nom: nom.trim(), adresse: adresse.trim() });
-  }
-
+    onSave({ nom: nom.trim(), adresse: adresse.trim(), type });
+   } 
   return (
-    <Modal title={initial ? "Modifier l'immeuble" : "Nouvel immeuble"} onClose={onClose}>
+    <Modal title={initial ? "Modifier la propriété" : "Nouvelle propriété"} onClose={onClose}>
       <form onSubmit={submit}>
+   <div className="field">
+  <label>Type de propriété</label>
+  <select value={type} onChange={(e) => setType(e.target.value)}>
+    <option value="immeuble">Immeuble</option>
+    <option value="villa">Villa</option>
+    <option value="studio">Studio</option>
+    <option value="cour_commune">Cour commune</option>
+    <option value="autre">Autre</option>
+  </select>
+</div>     
         <div className="field">
-          <label>Nom de l'immeuble</label>
+          <label>Nom de la propriété</label>
           <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex : Résidence Les Palmiers" required autoFocus />
         </div>
         <div className="field">

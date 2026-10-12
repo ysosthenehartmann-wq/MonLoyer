@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useData } from "../context/DataContext";
 import { formatMoney, formatDate, periodLabel } from "../lib/dates";
 import Modal from "../components/Modal";
+import { genererBail } from "../lib/bail";
 
 export default function Locataires() {
   const { state, addLocataire, updateLocataire, deleteLocataire, getLogement, getImmeuble, getPaiementsByLocataire } = useData();
@@ -57,12 +58,19 @@ export default function Locataires() {
                 <div className="name">{t.nom}</div>
                 <div className="meta">
                   {logement ? `${logement.nom} — ${immeuble?.nom}` : "Logement introuvable"} {t.telephone ? `· ${t.telephone}` : ""}
-                </div>
+                </div>                {(t.cautionMontant > 0 || t.avanceMontant > 0 || t.dateEntree) && (   // seulement s'il y a quelque chose à montrer
+                  <div className="meta">
+                    {t.dateEntree ? `Entrée le ${formatDate(t.dateEntree)}` : ""}
+                    {t.cautionMontant > 0 ? ` · Caution ${formatMoney(t.cautionMontant)} (${t.cautionStatut === "restituee" ? "restituée" : "conservée"})` : ""}
+                    {t.avanceMontant > 0 ? ` · Avance ${formatMoney(t.avanceMontant)}` : ""}
+                  </div>
+                )} 
               </div>
               <div style={{ display: "flex", gap: 6 }}>
                 <button className="btn btn-secondary" onClick={() => setHistoryFor(historyFor === t.id ? null : t.id)}>
                   {historyFor === t.id ? "Masquer historique" : "Historique"}
                 </button>
+                <button className="btn btn-secondary" onClick={() => genererBail({ proprietaire: state.proprietaire, immeuble, logement, locataire: t })}>Bail</button>
                 <button className="btn btn-ghost" onClick={() => setModal(t)}>✏️</button>
                 <button className="btn btn-danger" onClick={() => { if (confirm(`Supprimer ${t.nom} ?`)) deleteLocataire(t.id); }}>🗑️</button>
               </div>
@@ -76,13 +84,13 @@ export default function Locataires() {
                     <span style={{ fontFamily: "var(--font-mono)" }}>{formatMoney(p.montant)}</span>
                     <span style={{ color: "var(--muted)", fontSize: 13 }}>{formatDate(p.date)}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
-
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    })}
+    
       {modal && (
         <LocataireForm
           initial={modal === "new" ? null : modal}
@@ -100,11 +108,23 @@ function LocataireForm({ initial, logements, getImmeuble, onClose, onSave }) {
   const [nom, setNom] = useState(initial?.nom || "");
   const [telephone, setTelephone] = useState(initial?.telephone || "");
   const [logementId, setLogementId] = useState(initial?.logementId || logements[0]?.id || "");
+  const [dateEntree, setDateEntree] = useState(initial?.dateEntree || "");
+  const [cautionMontant, setCautionMontant] = useState(initial?.cautionMontant || "");
+  const [avanceMontant, setAvanceMontant] = useState(initial?.avanceMontant || "");
+  const [cautionStatut, setCautionStatut] = useState(initial?.cautionStatut || "conservee");
 
   function submit(e) {
-    e.preventDefault();
-    if (!nom.trim() || !logementId) return;
-    onSave({ nom: nom.trim(), telephone: telephone.trim(), logementId });
+    e.preventDefault();                                  // empêche le rechargement de la page
+    if (!nom.trim() || !logementId) return;              // nom et logement obligatoires
+    onSave({
+      nom: nom.trim(),
+      telephone: telephone.trim(),
+      logementId,
+      dateEntree,
+      cautionMontant: Number(cautionMontant || 0),       // texte → nombre
+      avanceMontant: Number(avanceMontant || 0),
+      cautionStatut,                                     // "conservee" ou "restituee"
+    });
   }
 
   return (
@@ -126,6 +146,25 @@ function LocataireForm({ initial, logements, getImmeuble, onClose, onSave }) {
                 {l.nom} — {getImmeuble(l.immeubleId)?.nom}
               </option>
             ))}
+          </select>
+        </div>
+        <div className="field">
+          <label>Date d'entrée (optionnel)</label>
+          <input type="date" value={dateEntree} onChange={(e) => setDateEntree(e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Caution versée en FCFA (optionnel)</label>
+          <input type="number" min="0" value={cautionMontant} onChange={(e) => setCautionMontant(e.target.value)} placeholder="Ex : 200000" />
+        </div>
+        <div className="field">
+          <label>Avance versée en FCFA (optionnel)</label>
+          <input type="number" min="0" value={avanceMontant} onChange={(e) => setAvanceMontant(e.target.value)} placeholder="Ex : 100000" />
+        </div>
+        <div className="field">
+          <label>Statut de la caution</label>
+          <select value={cautionStatut} onChange={(e) => setCautionStatut(e.target.value)}>
+            <option value="conservee">Conservée</option>
+            <option value="restituee">Restituée</option>
           </select>
         </div>
         <div className="modal-actions">

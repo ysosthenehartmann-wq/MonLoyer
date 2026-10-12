@@ -1,4 +1,7 @@
 import { HashRouter, Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "./lib/supabaseClient";
+import Login from "./pages/Login";
 import { DataProvider, useData } from "./context/DataContext";
 import Sidebar from "./components/Sidebar";
 import Onboarding from "./pages/Onboarding";
@@ -10,6 +13,29 @@ import Parametres from "./pages/Parametres";
 
 function Shell() {
   const { state } = useData();
+  const [session, setSession] = useState(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setChecking(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  if (checking) {
+    return <p>Chargement...</p>;
+  }
+
+  if (!session) {
+    return <Login />;
+  }
 
   if (!state.proprietaire) {
     return <Onboarding />;
@@ -29,6 +55,7 @@ function Shell() {
   );
 }
 
+
 export default function App() {
   return (
     <DataProvider>
@@ -38,3 +65,5 @@ export default function App() {
     </DataProvider>
   );
 }
+
+ 

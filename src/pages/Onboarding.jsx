@@ -16,7 +16,7 @@ export default function Onboarding() {
   return (
     <div className="onboarding-screen">
       <div className="onboarding-card">
-        <div className="mark">🏠</div>
+        <img src="/logo.png" alt="MonLoyer" className="mark" />  
         <h1>Bienvenue sur MonLoyer</h1>
         <p className="lead">Créez votre profil propriétaire pour commencer à gérer vos immeubles, vos locataires et vos loyers.</p>
         <form onSubmit={handleSubmit}>

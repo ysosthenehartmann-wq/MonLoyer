@@ -1,6 +1,6 @@
-// Toutes les données restent sur l'appareil du propriétaire (localStorage).
-// Aucune donnée n'est envoyée à un serveur : adapté à une connexion limitée
-// et à la confidentialité des informations locatives.
+// Les données de l'application sont enregistrées dans Supabase (base en ligne,
+// protégée par compte : chaque propriétaire ne voit que ses propres données).
+// Le stockage local de l'appareil sert de copie de secours et d'affichage rapide.
 
 const KEY = "monloyer_v1";
 
